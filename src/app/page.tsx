@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const router = useRouter()
   const [showCreatedEvent, setShowCreatedEvent] = useState(false)
   const [formData, setFormData] = useState
     <
@@ -13,6 +15,7 @@ export default function Home() {
         name: "",
       }
   )
+  
 
   function handleChange(event) {
     const {name, value} = event.target
@@ -24,20 +27,18 @@ export default function Home() {
     })
   }
 
-  function handleSubmit(event: any) {
+  async function handleSubmit(event: any) {
     event.preventDefault()
-    postData("http://localhost:3001/event/new", formData).then((data) => {
-      if (data.ok) {
-        console.log(data.json())
-        setShowCreatedEvent(true)
-      } else {
-        console.log(data.statusText);
-      }
-    });
+    try {
+      const response: Response = await postData("http://localhost:3001/events/new", formData)
+      const json = await response.json()
+      router.push(`/events/${json.uuid}`)
+    } catch (error) {
+        console.log(error)
+    }
   }
 
   async function postData(url = "", data = {}) {
-    console.log(JSON.stringify({name:'test'}))
     return await fetch(url, {
       method: "POST",
       mode: "cors",
@@ -48,7 +49,6 @@ export default function Home() {
       body: JSON.stringify(data),
     });
   }
-
 
   return (
     <>
